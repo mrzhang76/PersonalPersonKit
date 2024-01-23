@@ -53,3 +53,46 @@ class PixivContentProcess():
         with open('User'+str(Userid) + ".json", "w",encoding="utf8") as write_file:
              json.dump(processed_novels,write_file,ensure_ascii=False,indent=4)
         return processed_novels
+    
+    def GetPixivNovelbySeries(self,series_id,api):
+        series = {'series_detail':'','series_novel':''}
+        result = self.PixivNovelSeriesProcess(series_id,api)
+        series['series_detail'] = (result['series'])["series_detail"]
+        series_novel = (result['series'])["series_novel"]
+        last_order = result['new_last_order']
+        while(last_order!=''):
+            result = self.PixivNovelSeriesProcess(series_id,api,last_order)
+            series_novel.update((result['series'])["series_novel"])
+            last_order = result['new_last_order']
+        series['series_novel'] = series_novel 
+        return series
+    
+    def PixivNovelSeriesProcess(self,series_id,api,last_order: str | None = None):
+        result = {'series':'','new_last_order':''}
+        if(last_order!=None):
+            json_result = api.novel_series(series_id,last_order=last_order)
+        else:
+            json_result = api.novel_series(series_id)
+        result['series'] = self.PixivNovelSeriesJsonProcess(json_result)
+        print(json_result["next_url"])
+        if(json_result["next_url"]!=None):
+            result['new_last_order'] = ((parse_qs(urlparse(json_result["next_url"]).query))['last_order'])[0]
+            print(result['new_last_order'])
+        else: 
+            result['new_last_order'] = ''
+        return result
+    
+    def PixivNovelSeriesJsonProcess(self,novel_series):
+        series_novel = {}
+        for novel in novel_series["novels"]:
+                series_novel[str(novel["id"])] = novel["title"]
+        series_detail = {"series_id":(novel_series["novel_series_detail"])["id"],
+                 "series_title":(novel_series["novel_series_detail"])["title"],
+                 "author_id":((novel_series["novel_series_detail"])["user"])["id"],
+                 "author_name":((novel_series["novel_series_detail"])["user"])["name"],
+                 "caption":(novel_series["novel_series_detail"])["caption"],
+                 }
+        series = {"series_detail":series_detail,
+                  "series_novel":series_novel
+                 }
+        return series
