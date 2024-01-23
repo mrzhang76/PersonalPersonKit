@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from pixivpy3 import *
 class PixivContentProcess():
-    def PixivNovelJsonProcess(self,novel_detail,novel_text):
+    def PixivNovelJsonProcess(self,novel_detail,novel_text): #处理文章JSON
         novel = {"novel_id":(novel_detail["novel"])["id"],
                  "novel_title":(novel_detail["novel"])["title"],
                  "series_id":((novel_detail["novel"])["series"])["id"],
@@ -16,13 +16,13 @@ class PixivContentProcess():
               json.dump(novel,write_file,ensure_ascii=False)
         return novel
     
-    def PixivNovelDownload(self,novellist,api):
+    def PixivNovelDownload(self,novellist,api): #按列表下载文章
         for novelid in novellist.keys():
             novel_detail = api.novel_detail(novelid)
             novel_text = api.novel_text(novelid)
             self.PixivNovelJsonProcess(novel_detail,novel_text)
 
-    def GetPixivNovelMarkedList(self,Userid,api):
+    def GetPixivNovelMarkedList(self,Userid,api): #获取用户收藏文章列表 
         result = self.PixivNovelMarkedProcess(Userid,api)
         novels = result['novels']
         max_bookmark_id = result['new_max_bookmark_id']
@@ -30,10 +30,10 @@ class PixivContentProcess():
             result = self.PixivNovelMarkedProcess(Userid,api,_max_bookmark_id=max_bookmark_id)
             novels = novels + result['novels']
             max_bookmark_id = result['new_max_bookmark_id']
-        novels = self.PixivPixivNovelMarkedListProcess(Userid,novels)
+        novels = self.PixivNovelMarkedListProcess(Userid,novels)
         return novels
 
-    def PixivNovelMarkedProcess(self,Userid,api,_max_bookmark_id:int |str = None):
+    def PixivNovelMarkedProcess(self,Userid,api,_max_bookmark_id:int |str = None): #文章收藏翻页
         result = {'novels':'','new_max_bookmark_id':''}
         if(_max_bookmark_id!=''):
             json_result = api.user_bookmarks_novel(Userid,max_bookmark_id=_max_bookmark_id)
@@ -46,7 +46,7 @@ class PixivContentProcess():
             result['new_max_bookmark_id'] = ''
         return result
     
-    def PixivPixivNovelMarkedListProcess(self,Userid,novels):
+    def PixivNovelMarkedListProcess(self,Userid,novels): #处理收藏文章列表
         processed_novels = {}
         for novel in novels:
             processed_novels[str(novel['id'])] = novel['title']
