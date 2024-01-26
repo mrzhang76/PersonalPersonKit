@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from pixivpy3 import *
 class PixivContentProcess():
-    def PixivNovelJsonProcess(self,novel_detail,novel_text): #处理文章JSON
+    def PixivNovelJsonProcess(self,novel_detail,novel_text):#处理文章JSON
         novel = {"novel_id":(novel_detail["novel"])["id"],
                  "novel_title":(novel_detail["novel"])["title"],
                  "series_id":((novel_detail["novel"])["series"])["id"],
@@ -54,7 +54,7 @@ class PixivContentProcess():
              json.dump(processed_novels,write_file,ensure_ascii=False,indent=4)
         return processed_novels
     
-    def GetPixivNovelbySeries(self,series_id,api):
+    def GetPixivNovelbySeries(self,series_id,api): #按系列返回文章列表
         series = {'series_detail':'','series_novel':''}
         result = self.PixivNovelSeriesProcess(series_id,api)
         series['series_detail'] = (result['series'])["series_detail"]
@@ -67,7 +67,7 @@ class PixivContentProcess():
         series['series_novel'] = series_novel 
         return series
     
-    def PixivNovelSeriesProcess(self,series_id,api,last_order: str | None = None):
+    def PixivNovelSeriesProcess(self,series_id,api,last_order: str | None = None): #按系列获取文章列表
         result = {'series':'','new_last_order':''}
         if(last_order!=None):
             json_result = api.novel_series(series_id,last_order=last_order)
@@ -82,7 +82,7 @@ class PixivContentProcess():
             result['new_last_order'] = ''
         return result
     
-    def PixivNovelSeriesJsonProcess(self,novel_series):
+    def PixivNovelSeriesJsonProcess(self,novel_series): #处理系列文章返回JSON
         series_novel = {}
         for novel in novel_series["novels"]:
                 series_novel[str(novel["id"])] = novel["title"]
